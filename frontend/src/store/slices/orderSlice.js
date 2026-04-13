@@ -53,6 +53,43 @@ export const returnUserOrder = createAsyncThunk('orders/returnOrder', async ({ i
   }
 });
 
+export const updateOrderAddress = createAsyncThunk('orders/updateOrderAddress', async ({ id, addressData }, { rejectWithValue }) => {
+  try {
+    const res = await api.put(`/orders/${id}/address`, addressData, { headers: getAuthHeader() });
+    return res.data;
+  } catch (error) {
+    return rejectWithValue(error.response?.data?.message || error.message);
+  }
+});
+
+export const updateEstimatedDeliveryDate = createAsyncThunk('orders/updateEstimatedDeliveryDate', async ({ id, dateData }, { rejectWithValue }) => {
+  try {
+    const res = await api.put(`/orders/${id}/estimated-delivery`, dateData, { headers: getAuthHeader() });
+    return res.data;
+  } catch (error) {
+    return rejectWithValue(error.response?.data?.message || error.message);
+  }
+});
+
+export const createPaymentOrder = createAsyncThunk('orders/createPaymentOrder', async (amount, { rejectWithValue }) => {
+  try {
+    const res = await api.post('/payment/order', { amount }, { headers: getAuthHeader() });
+    return res.data;
+  } catch (error) {
+    return rejectWithValue(error.response?.data?.message || error.message);
+  }
+});
+
+export const verifyPayment = createAsyncThunk('orders/verifyPayment', async (paymentData, { rejectWithValue }) => {
+  try {
+    const res = await api.post('/payment/verify', paymentData, { headers: getAuthHeader() });
+    return res.data;
+  } catch (error) {
+    return rejectWithValue(error.response?.data?.message || error.message);
+  }
+});
+
+
 const orderSlice = createSlice({
   name: 'orders',
   initialState,
@@ -92,6 +129,23 @@ const orderSlice = createSlice({
       }
     });
     builder.addCase(returnUserOrder.rejected, (state, action) => { state.loading = false; state.error = action.payload; });
+
+    builder.addCase(updateOrderAddress.pending, (state) => { state.loading = true; state.error = null; });
+    builder.addCase(updateOrderAddress.fulfilled, (state, action) => { 
+      state.loading = false; 
+      const index = state.orders.findIndex(o => o._id === action.payload._id);
+      if (index !== -1) state.orders[index] = action.payload;
+    });
+    builder.addCase(updateOrderAddress.rejected, (state, action) => { state.loading = false; state.error = action.payload; });
+
+    builder.addCase(updateEstimatedDeliveryDate.pending, (state) => { state.loading = true; state.error = null; });
+    builder.addCase(updateEstimatedDeliveryDate.fulfilled, (state, action) => { 
+      state.loading = false; 
+      const index = state.orders.findIndex(o => o._id === action.payload._id);
+      if (index !== -1) state.orders[index] = action.payload;
+    });
+    builder.addCase(updateEstimatedDeliveryDate.rejected, (state, action) => { state.loading = false; state.error = action.payload; });
+
   }
 });
 

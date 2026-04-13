@@ -14,14 +14,14 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 // Connect to database
 connectDB();
 
-import authRoutes from './routes/authRoutes.js';
-import productRoutes from './routes/productRoutes.js';
-import cartRoutes from './routes/cartRoutes.js';
-import orderRoutes from './routes/orderRoutes.js';
-import reviewRoutes from './routes/reviewRoutes.js';
-import adminRoutes from './routes/adminRoutes.js';
-import employeeRoutes from './routes/employeeRoutes.js';
-import paymentRoutes from './routes/paymentRoutes.js';
+import authRoutes from './modules/auth/auth.routes.js';
+import productRoutes from './modules/product/product.routes.js';
+import cartRoutes from './modules/cart/cart.routes.js';
+import orderRoutes from './modules/order/order.routes.js';
+import reviewRoutes from './modules/review/review.routes.js';
+import adminRoutes from './modules/admin/admin.routes.js';
+import employeeRoutes from './modules/employee/employee.routes.js';
+import paymentRoutes from './modules/payment/payment.routes.js';
 
 const app = express();
 

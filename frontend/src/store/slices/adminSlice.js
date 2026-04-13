@@ -103,6 +103,13 @@ export const removeAdmin = createAsyncThunk('admin/removeAdmin', async (id, { re
   } catch (err) { return rejectWithValue(err.response?.data?.message || err.message); }
 });
 
+export const toggleUserBlock = createAsyncThunk('admin/toggleUserBlock', async (id, { rejectWithValue }) => {
+  try {
+    const res = await api.put(`/admin/users/${id}/block`, {}, { headers: getAuthHeader() });
+    return res.data;
+  } catch (err) { return rejectWithValue(err.response?.data?.message || err.message); }
+});
+
 export const fetchAdminAnalytics = createAsyncThunk('admin/fetchAnalytics', async (timeRange = '30d', { rejectWithValue }) => {
   try {
     const res = await api.get(`/admin/analytics?timeRange=${timeRange}`, { headers: getAuthHeader() });
@@ -168,6 +175,13 @@ const adminSlice = createSlice({
       const index = state.users.findIndex(u => u._id === action.payload._id);
       if (index !== -1) {
          state.users[index] = { ...state.users[index], isAdmin: action.payload.isAdmin };
+      }
+    });
+
+    builder.addCase(toggleUserBlock.fulfilled, (state, action) => {
+      const index = state.users.findIndex(u => u._id === action.payload._id);
+      if (index !== -1) {
+         state.users[index] = action.payload;
       }
     });
 

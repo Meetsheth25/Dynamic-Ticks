@@ -11,10 +11,25 @@ const VerifyOtp = () => {
   const [resending, setResending] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [timer, setTimer] = useState(60);
+  const [canResend, setCanResend] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const email = location.state?.email;
   const isRegistration = location.state?.isRegistration;
+
+  React.useEffect(() => {
+    let interval;
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    } else {
+      setCanResend(true);
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [timer]);
 
   const handleSubmit = async (e, isResend = false) => {
     if (e) e.preventDefault();
@@ -24,15 +39,15 @@ const VerifyOtp = () => {
     }
 
     if (isResend) {
+      if (!canResend) return;
       setResending(true);
       setError('');
       try {
-        const endpoint = isRegistration ? '/api/auth/register' : '/api/auth/forgot-password';
-        // For registration, we need name and password too, but here we just want to resend OTP
-        // Logic might need name/pass if it's a first time recreate, 
-        // but our backend handled it by allowing existing unverified users to get new OTP.
-        await axios.post(endpoint, { email }); 
+        const reason = isRegistration ? 'registration' : 'forgot-password';
+        await axios.post('/api/auth/resend-otp', { email, reason }); 
         setMessage('New OTP sent to your email.');
+        setTimer(60);
+        setCanResend(false);
       } catch (err) {
         setError('Failed to resend OTP.');
       } finally {
@@ -115,10 +130,10 @@ const VerifyOtp = () => {
           <button 
             type="button"
             onClick={(e) => handleSubmit(null, true)}
-            disabled={resending}
+            disabled={resending || timer > 0}
             className="text-[10px] uppercase tracking-[0.3em] font-black text-black border-b border-black pb-1 hover:text-[var(--accent)] hover:border-[var(--accent)] transition-all cursor-pointer disabled:opacity-50 mx-auto w-fit"
           >
-            {resending ? 'Resending...' : "Didn't receive code? Resend"}
+            {resending ? 'Resending...' : timer > 0 ? `Resend in ${timer}s` : "Didn't receive code? Resend"}
           </button>
           
           <Link to="/login" className="text-[10px] uppercase tracking-[0.3em] font-bold text-gray-400 hover:text-black transition-all">

@@ -5,27 +5,27 @@ import RootLayout from '@/layouts/RootLayout';
 import { Toaster } from 'react-hot-toast';
 
 // Lazy loading all pages for better performance
-const Home = lazy(() => import('@/pages/Home'));
-const Catalog = lazy(() => import('@/pages/Catalog'));
-const ProductDetail = lazy(() => import('@/pages/ProductDetail'));
-const Cart = lazy(() => import('@/pages/Cart'));
-const Checkout = lazy(() => import('@/pages/Checkout'));
-const Orders = lazy(() => import('@/pages/Orders'));
-const OrderDetails = lazy(() => import('@/pages/OrderDetails'));
-const ReturnProduct = lazy(() => import('@/pages/ReturnProduct'));
+const Home = lazy(() => import('@/pages/customer/Home'));
+const Catalog = lazy(() => import('@/pages/customer/Catalog'));
+const ProductDetail = lazy(() => import('@/pages/customer/ProductDetail'));
+const Cart = lazy(() => import('@/pages/customer/Cart'));
+const Checkout = lazy(() => import('@/pages/customer/Checkout'));
+const Orders = lazy(() => import('@/pages/customer/Orders'));
+const OrderDetails = lazy(() => import('@/pages/customer/OrderDetails'));
+const ReturnProduct = lazy(() => import('@/pages/customer/ReturnProduct'));
 const Login = lazy(() => import('@/pages/Auth/Login'));
-const Signup = lazy(() => import('@/pages/Auth/Signup'));
+const Register = lazy(() => import('@/pages/Auth/Register'));
 const ForgotPassword = lazy(() => import('@/pages/Auth/ForgotPassword'));
 const VerifyOtp = lazy(() => import('@/pages/Auth/VerifyOtp'));
 const ResetPassword = lazy(() => import('@/pages/Auth/ResetPassword'));
-const AdminDashboard = lazy(() => import('@/pages/AdminDashboard'));
-const ManagerDashboard = lazy(() => import('@/pages/ManagerDashboard'));
-const StaffDashboard = lazy(() => import('@/pages/StaffDashboard'));
-const DeliveryDashboard = lazy(() => import('@/pages/DeliveryDashboard'));
-const About = lazy(() => import('@/pages/About'));
-const Contact = lazy(() => import('@/pages/Contact'));
-const Policy = lazy(() => import('@/pages/Policy'));
-const ShippingStatus = lazy(() => import('@/pages/ShippingStatus'));
+const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'));
+const ManagerDashboard = lazy(() => import('@/pages/employee/ManagerDashboard'));
+const StaffDashboard = lazy(() => import('@/pages/employee/StaffDashboard'));
+const DeliveryDashboard = lazy(() => import('@/pages/employee/DeliveryDashboard'));
+const About = lazy(() => import('@/pages/common/About'));
+const Contact = lazy(() => import('@/pages/common/Contact'));
+const Policy = lazy(() => import('@/pages/common/Policy'));
+const ShippingStatus = lazy(() => import('@/pages/customer/ShippingStatus'));
 
 // Loading Fallback Spinner
 const PageLoader = () => (
@@ -80,7 +80,7 @@ function App() {
             
             {/* Authentication Flows */}
             <Route path="login" element={<Login />} />
-            <Route path="signup" element={<Signup />} />
+            <Route path="register" element={<Register />} />
             <Route path="forgot-password" element={<ForgotPassword />} />
             <Route path="verify-otp" element={<VerifyOtp />} />
             <Route path="reset-password" element={<ResetPassword />} />

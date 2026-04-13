@@ -73,11 +73,30 @@ const Navbar = () => {
         
         {/* Right: Actions */}
         <div className="flex items-center gap-6">
-          <button className={`hidden md:block transition-colors hover:text-[var(--accent)] ${
-            isScrolled || !isHome ? 'text-black' : 'text-white'
-          }`}>
-            <Search className="w-5 h-5" />
-          </button>
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              const term = e.target.search.value;
+              if (term) window.location.href = `/catalog?search=${term}`;
+            }}
+            className={`hidden md:flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-300 overflow-hidden ${
+              isScrolled || !isHome 
+                ? 'border-black/10 bg-gray-50/50 hover:bg-white focus-within:border-black focus-within:bg-white focus-within:shadow-sm' 
+                : 'border-white/20 bg-white/5 hover:bg-white/10 focus-within:border-white/50 focus-within:bg-white/10'
+            }`}
+          >
+            <Search className={`w-3.5 h-3.5 ${isScrolled || !isHome ? 'text-gray-400' : 'text-white/70'}`} />
+            <input 
+              name="search"
+              type="text" 
+              placeholder="Search..." 
+              className={`bg-transparent border-none outline-none text-[10px] uppercase tracking-widest w-20 focus:w-32 transition-all duration-500 placeholder:font-medium ${
+                isScrolled || !isHome 
+                  ? 'text-black placeholder:text-gray-400' 
+                  : 'text-white placeholder:text-white/60'
+              }`}
+            />
+          </form>
 
           <Link to="/cart" className={`relative transition-colors hover:text-[var(--accent)] ${
             isScrolled || !isHome ? 'text-black' : 'text-white'

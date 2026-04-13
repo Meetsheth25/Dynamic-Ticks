@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import asyncHandler from 'express-async-handler';
-import User from '../models/User.js';
-import Employee from '../models/Employee.js';
+import User from '../modules/auth/auth.model.js';
+import Employee from '../modules/employee/employee.model.js';
 
 export const protect = asyncHandler(async (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -13,6 +13,16 @@ export const protect = asyncHandler(async (req, res, next) => {
 
       req.user = decoded;
       req.user._id = decoded.id;
+
+      // If it's a client user (not an employee/admin), check if they are blocked
+      if (!req.user.role || req.user.role === 'client') {
+        const user = await User.findById(req.user.id);
+        if (user && user.isBlocked) {
+          res.status(403);
+          throw new Error('Your account has been blocked. Access denied.');
+        }
+      }
+
       next();
     } catch (error) {
       console.error('Token verification failed:', error.message);
