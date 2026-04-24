@@ -1,5 +1,7 @@
 # Dynamic Ticks - Luxury Horology E-Commerce ⌚
 
+![Dynamic Ticks Hero](dynamic_ticks_hero_1777022516050.png)
+
 Dynamic Ticks is a premium, full-stack MERN (MongoDB, Express, React, Node.js) e-commerce application designed specifically for high-end luxury watches. It features a highly bespoke, glassmorphism-inspired "luxury" aesthetic, complex multi-tier employee routing, and robust end-to-end purchasing flows.
 
 ---
@@ -10,28 +12,30 @@ Dynamic Ticks is a premium, full-stack MERN (MongoDB, Express, React, Node.js) e
 - **Modern Aesthetic:** Bespoke, minimalist monochromatic design with tailored luxury accents and smooth micro-animations.
 - **Glassmorphism:** Elegant use of transparency and blur effects for a premium feel.
 - **Responsive Architecture:** Optimized for desktop, tablet, and mobile devices.
+- **Interactive Elements:** Subtle hover effects and transitions that mimic a high-end retail experience.
 
 ### 2. Multi-tier Authentication & Security
-- **JWT-Based Authentication:** Secure, cookie-based session management.
-- **OTP Verification:** Integrated email-based OTP verification using Nodemailer.
+- **JWT-Based Authentication:** Secure, cookie-based session management for persistent logins.
+- **OTP Verification:** Integrated email-based OTP verification using Nodemailer for secure account activation.
+- **Google OAuth 2.0:** Integrated "Continue with Google" flow for seamless customer onboarding.
 - **Role-Based Access Control (RBAC):** Distinct portals and permissions for:
-  - **Admins:** Full control over the platform.
-  - **Managers:** Product and inventory management.
-  - **Staff:** Order fulfillment and review moderation.
-  - **Delivery Agents:** Status updates and route management.
-  - **Customers:** Personal accounts and purchase history.
+  - **👑 Admins:** Full control over the platform, users, and global settings.
+  - **💼 Managers:** Product and inventory management, sales reporting.
+  - **🛠️ Staff:** Order fulfillment, review moderation, and customer support.
+  - **🚚 Delivery Agents:** Status updates, route management, and delivery confirmation.
+  - **👤 Customers:** Personal accounts, purchase history, and wishlists.
 
 ### 3. Progressive Security & Auth
-- **Google OAuth 2.0:** Integrated "Continue with Google" flow for seamless customer onboarding.
-- **Resend OTP Cooldown:** Intelligent 60-second timer on OTP requests to prevent spam and ensure delivery.
+- **Resend OTP Cooldown:** Intelligent 60-second timer on OTP requests to prevent spam.
 - **COOP Security:** Hardened frontend security with Cross-Origin-Opener-Policy to protect authentication popups.
+- **Encrypted Data:** All sensitive information is hashed using industry-standard bcrypt.
 
 ### 4. Order & Fulfillment Management
 - **Order Lifecycle:** Track orders from *Pending* ➔ *Picked* ➔ *Out for Delivery* ➔ *Delivered*.
-- **Delivery Timeline Management:** Staff and Admins can set estimated delivery dates. Enforces an "Early, Not Delayed" rule to maintain customer trust.
-- **Flexible Shipping:** Customers can change their shipping address before the product is "Out for Delivery".
+- **Delivery Timeline Management:** Staff and Admins can set estimated delivery dates. Enforces an "Early, Not Delayed" rule.
+- **Flexible Shipping:** Customers can update their shipping address until the product is "Out for Delivery".
 
-### 4. Advanced E-Commerce Core
+### 5. Advanced E-Commerce Core
 - **Razorpay Integration:** Secure, end-to-end payment gateway implementation.
 - **Inventory Tracking:** Automated stock management and low-stock alerts.
 - **Feedback Engine:** Detailed customer reviews with aggregate star ratings.
@@ -72,9 +76,9 @@ To explore the different roles, you can use the following pre-configured account
 This project follows a strict **Feature-Based Modular MVC** structure on the backend and a **Role-Based** directory pattern on the frontend to ensure maintainability at scale.
 
 ### Backend (Modular MVC)
-- **`backend/modules/`**: Each feature (Auth, Product, Order, etc.) encapsulates its own Model, Controller, and Routes within a dedicated folder.
+- **`backend/modules/`**: Each feature (Auth, Product, Order, etc.) encapsulates its own Model, Controller, and Routes.
 - **`backend/middleware/`**: Centralized authentication and file upload logic.
-- **`backend/utils/`**: Shared services like email delivery.
+- **`backend/utils/`**: Shared services like email delivery and common utilities.
 
 ### Frontend (Role-Based)
 - **`frontend/src/pages/`**: Views are organized by user permissions:
@@ -96,7 +100,7 @@ This project follows a strict **Feature-Based Modular MVC** structure on the bac
 ### 2. Installation
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/Dynamic-Ticks.git
+git clone https://github.com/Meetsheth25/Dynamic-Ticks.git
 cd Dynamic-Ticks
 
 # Install Backend dependencies
@@ -112,12 +116,17 @@ npm install
 Create a `.env` file in the `backend/` directory:
 ```env
 PORT=5000
+NODE_ENV=development
 MONGO_URI=your_mongodb_uri
 JWT_SECRET=your_secret_key
-RAZORPAY_KEY_ID=your_key_id
-RAZORPAY_SECRET=your_key_secret
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
 EMAIL_USER=your_email@gmail.com
 EMAIL_PASS=your_app_password
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+RAZORPAY_KEY_ID=your_razorpay_key_id
+RAZORPAY_KEY_SECRET=your_razorpay_secret
 ```
 
 ### 4. Initialize Database
@@ -140,4 +149,9 @@ npm run dev
 ```
 
 ---
-*Architected and Designed by Dynamic Ticks.*
+
+## 📜 License
+This project is for educational purposes. Feel free to use the code for your own learning or projects.
+
+---
+*Architected and Designed with ❤️ by Dynamic Ticks.*
