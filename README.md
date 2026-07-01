@@ -154,4 +154,4 @@ npm run dev
 This project is for educational purposes. Feel free to use the code for your own learning or projects.
 
 ---
-*Architected and Designed with ❤️ by Dynamic Ticks.*
+*Architected and Designed with ❤️ by Meet Sheth.*

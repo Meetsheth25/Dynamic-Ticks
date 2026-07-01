@@ -8,13 +8,13 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config({ path: path.join(__dirname, '.env') });
 
-import User from './models/User.js';
-import Product from './models/Product.js';
-import Order from './models/Order.js';
-import Employee from './models/Employee.js';
-import Review from './models/Review.js';
-import Cart from './models/Cart.js';
-import Payment from './models/Payment.js';
+import User from './modules/auth/auth.model.js';
+import Product from './modules/product/product.model.js';
+import Order from './modules/order/order.model.js';
+import Employee from './modules/employee/employee.model.js';
+import Review from './modules/review/review.model.js';
+import Cart from './modules/cart/cart.model.js';
+import Payment from './modules/payment/payment.model.js';
 
 const resetDB = async () => {
   try {
@@ -36,8 +36,8 @@ const resetDB = async () => {
     // Create default Admin User
     const adminUser = new User({
       name: 'System Admin',
-      email: 'admi@dynamicticks.com',
-      password: 'password123',
+      email: 'mitsheth2@gmail.com',
+      password: '#SM_253147s.',
       isAdmin: true,
       isVerified: true
     });
@@ -72,7 +72,7 @@ const resetDB = async () => {
     await delivery.save();
 
     console.log('--- DEFAULT ACCOUNTS CREATED ---');
-    console.log('1. Admin: admin@dynamicticks.com | Pass: password123');
+    console.log('1. Admin: mitsheth2@gmail.com | Pass: #SM_253147s.');
     console.log('2. Manager: manager@dynamicticks.com | Pass: password123');
     console.log('3. Staff: staff@dynamicticks.com | Pass: password123');
     console.log('4. Delivery: delivery@dynamicticks.com | Pass: password123');

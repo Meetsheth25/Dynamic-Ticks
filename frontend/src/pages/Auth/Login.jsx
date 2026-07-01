@@ -28,13 +28,13 @@ const Login = () => {
       // To get an idToken with useGoogleLogin, we need 'auth-code' flow OR just stick to what works.
       // Actually, standard @react-oauth/google <GoogleLogin> provides the credential (JWT).
       // useGoogleLogin provides an access_token by default.
-      
+
       // I will keep using the official GoogleLogin component's logic if possible, 
       // but the user wants a custom button that IS VISIBLE.
       // I'll change the backend or the way we get the token if needed, 
       // but first let's see if we can just trigger the official one or style a wrapper.
       // Actually, useGoogleLogin is the right way for custom UI.
-      
+
       // Note: useGoogleLogin default flow is 'implicit' (access_token).
       // If the backend needs idToken, we might need to fetch user info manually or change backend.
       // Let's check backend auth controller.
@@ -187,7 +187,7 @@ const Login = () => {
 
             {localError && localError.includes("register first") && (
               <div className="mt-6">
-                <Link 
+                <Link
                   to="/register"
                   className="w-full border border-black text-black py-6 text-[10px] font-bold uppercase tracking-[0.4em] hover:bg-black hover:text-white transition-all duration-500 flex items-center justify-center gap-6 group"
                 >
@@ -199,7 +199,7 @@ const Login = () => {
 
             {localError && localError.includes("Forgot Password") && (
               <div className="mt-6">
-                <Link 
+                <Link
                   to="/forgot-password"
                   className="w-full border border-black text-black py-6 text-[10px] font-bold uppercase tracking-[0.4em] hover:bg-black hover:text-white transition-all duration-500 flex items-center justify-center gap-6 group"
                 >

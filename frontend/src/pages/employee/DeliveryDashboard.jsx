@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   logoutEmployee, 
   fetchDeliveryOrders, 
-  updateDeliveryStatusThunk 
+  updateDeliveryStatus as updateDeliveryStatusThunk 
 } from '@/store/slices/employeeSlice';
 import { updateEstimatedDeliveryDate } from '@/store/slices/orderSlice';
 
