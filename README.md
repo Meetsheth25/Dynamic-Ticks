@@ -1,11 +1,5 @@
 # Dynamic Ticks - Luxury Horology E-Commerce ⌚
 
-![Dynamic Ticks Hero](dynamic_ticks_hero_1777022516050.png)
-
-### 🔗 Live Deployments
-- 🌐 **Frontend Client:** [dynamic-ticks.vercel.app](https://dynamic-ticks.vercel.app/)
-- ⚙️ **Backend Server:** [dynamic-ticks.onrender.com](https://dynamic-ticks.onrender.com/)
-
 ---
 
 Dynamic Ticks is a premium, full-stack MERN (MongoDB, Express, React, Node.js) e-commerce application designed specifically for high-end luxury watches. It features a highly bespoke, glassmorphism-inspired "luxury" aesthetic, complex multi-tier employee routing, and robust end-to-end purchasing flows.
