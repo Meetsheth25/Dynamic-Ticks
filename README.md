@@ -154,4 +154,5 @@ npm run dev
 This project is for educational purposes. Feel free to use the code for your own learning or projects.
 
 ---
-*Architected and Designed with ❤️ by Meet Sheth.*
+Driven by passion. Powered by code.
+— Meet Sheth
