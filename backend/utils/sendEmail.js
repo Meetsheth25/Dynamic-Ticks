@@ -1,7 +1,7 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
 /**
- * Sends an email using the Resend Email API.
+ * Sends an email using Brevo SMTP.
  * @param {Object} options - Email options
  * @param {string} options.email - Recipient email address
  * @param {string} options.subject - Email subject
@@ -10,50 +10,59 @@ import { Resend } from "resend";
  */
 const sendEmail = async (options) => {
   console.log("========================================");
-  console.log("📧 ATTEMPTING TO SEND EMAIL VIA RESEND");
+  console.log("📧 ATTEMPTING TO SEND EMAIL VIA BREVO SMTP");
   console.log("To   :", options.email);
   console.log("Subject :", options.subject);
   console.log("========================================");
 
-  if (!process.env.RESEND_API_KEY) {
-    const error = new Error("Missing RESEND_API_KEY environment variable.");
-    console.error("❌ RESEND CONFIG ERROR:", error.message);
+  if (
+    !process.env.SMTP_HOST ||
+    !process.env.SMTP_PORT ||
+    !process.env.SMTP_USER ||
+    !process.env.SMTP_PASS ||
+    !process.env.EMAIL_FROM
+  ) {
+    const error = new Error(
+      "Missing Brevo SMTP environment variables (SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, EMAIL_FROM)."
+    );
+    console.error("❌ SMTP CONFIG ERROR:", error.message);
     throw error;
   }
 
   try {
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT),
+      secure: false, // true for port 465, false for other ports (like 587)
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
 
-    const emailData = {
-      from: '"Dynamic Ticks" <onboarding@resend.dev>',
+    console.log("🔍 Connecting to Brevo SMTP...");
+    await transporter.verify();
+    console.log("✅ SMTP Connected Successfully");
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM,
       to: options.email,
       subject: options.subject,
       text: options.message,
       html: options.html,
     };
 
-    console.log("📤 Sending email via Resend API...");
-    const { data, error } = await resend.emails.send(emailData);
+    console.log("📤 Sending email via SMTP...");
+    const info = await transporter.sendMail(mailOptions);
 
-    if (error) {
-      console.error("========================================");
-      console.error("❌ RESEND API ERROR RESPONSE");
-      console.error("Name:", error.name);
-      console.error("Message:", error.message);
-      console.error("Error Object:", JSON.stringify(error, null, 2));
-      console.error("========================================");
-      
-      // Throwing error as required by step 10
-      throw new Error(error.message || "Failed to send email via Resend API.");
-    }
+    console.log("✅ Email Sent Successfully");
+    console.log("Message ID:", info.messageId);
 
-    console.log("✅ Email Sent Successfully via Resend");
-    console.log("Response Data:", JSON.stringify(data, null, 2));
-
-    return data;
+    return info;
   } catch (error) {
     console.error("========================================");
-    console.error("❌ RESEND SENDING EXCEPTION");
+    console.error("❌ SMTP ERROR");
+    console.error("Code:", error.code);
     console.error("Message:", error.message);
     console.error("Stack:", error.stack);
     console.error("========================================");
