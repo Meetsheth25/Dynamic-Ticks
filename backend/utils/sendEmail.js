@@ -1,89 +1,59 @@
-import nodemailer from "nodemailer";
-import dns from "dns";
+import { Resend } from "resend";
 
-// Force Node.js to prefer IPv4
-dns.setDefaultResultOrder("ipv4first");
-
+/**
+ * Sends an email using the Resend Email API.
+ * @param {Object} options - Email options
+ * @param {string} options.email - Recipient email address
+ * @param {string} options.subject - Email subject
+ * @param {string} options.message - Plain text message body
+ * @param {string} options.html - HTML message body
+ */
 const sendEmail = async (options) => {
   console.log("========================================");
-  console.log("📧 ATTEMPTING TO SEND EMAIL");
-  console.log("Host :", process.env.EMAIL_HOST);
-  console.log("Port :", process.env.EMAIL_PORT);
-  console.log("User :", process.env.EMAIL_USER);
+  console.log("📧 ATTEMPTING TO SEND EMAIL VIA RESEND");
   console.log("To   :", options.email);
+  console.log("Subject :", options.subject);
   console.log("========================================");
 
-  if (
-    !process.env.EMAIL_HOST ||
-    !process.env.EMAIL_PORT ||
-    !process.env.EMAIL_USER ||
-    !process.env.EMAIL_PASS
-  ) {
-    throw new Error(
-      "Missing EMAIL_HOST / EMAIL_PORT / EMAIL_USER / EMAIL_PASS environment variables."
-    );
+  if (!process.env.RESEND_API_KEY) {
+    const error = new Error("Missing RESEND_API_KEY environment variable.");
+    console.error("❌ RESEND CONFIG ERROR:", error.message);
+    throw error;
   }
 
   try {
-    const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: Number(process.env.EMAIL_PORT),
+    const resend = new Resend(process.env.RESEND_API_KEY);
 
-      // Gmail
-      secure: false,
-
-      // Force IPv4
-      family: 4,
-
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-
-      requireTLS: true,
-
-      tls: {
-        rejectUnauthorized: false,
-        minVersion: "TLSv1.2",
-      },
-
-      connectionTimeout: 60000,
-      greetingTimeout: 60000,
-      socketTimeout: 60000,
-
-      pool: true,
-      maxConnections: 5,
-      maxMessages: 100,
-
-      logger: true,
-      debug: true,
-    });
-
-    console.log("🔍 Verifying SMTP connection...");
-    await transporter.verify();
-    console.log("✅ SMTP Connected Successfully");
-
-    const mailOptions = {
-      from: `"Dynamic Ticks" <${process.env.EMAIL_USER}>`,
+    const emailData = {
+      from: '"Dynamic Ticks" <onboarding@resend.dev>',
       to: options.email,
       subject: options.subject,
       text: options.message,
       html: options.html,
     };
 
-    console.log("📤 Sending email...");
+    console.log("📤 Sending email via Resend API...");
+    const { data, error } = await resend.emails.send(emailData);
 
-    const info = await transporter.sendMail(mailOptions);
+    if (error) {
+      console.error("========================================");
+      console.error("❌ RESEND API ERROR RESPONSE");
+      console.error("Name:", error.name);
+      console.error("Message:", error.message);
+      console.error("Error Object:", JSON.stringify(error, null, 2));
+      console.error("========================================");
+      
+      // Throwing error as required by step 10
+      throw new Error(error.message || "Failed to send email via Resend API.");
+    }
 
-    console.log("✅ Email Sent Successfully");
-    console.log("Message ID:", info.messageId);
+    console.log("✅ Email Sent Successfully via Resend");
+    console.log("Response Data:", JSON.stringify(data, null, 2));
 
-    return info;
+    return data;
   } catch (error) {
     console.error("========================================");
-    console.error("❌ NODEMAILER ERROR");
-    console.error("Code:", error.code);
-    console.error("Command:", error.command);
+    console.error("❌ RESEND SENDING EXCEPTION");
     console.error("Message:", error.message);
     console.error("Stack:", error.stack);
     console.error("========================================");
