@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '@/services/api';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { Container } from '@/components/common/Container';
 import { Input } from '@/components/common/Input';
@@ -13,26 +13,30 @@ const VerifyOtp = () => {
   const [message, setMessage] = useState('');
   const [timer, setTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
+
   const location = useLocation();
   const navigate = useNavigate();
+
   const email = location.state?.email;
   const isRegistration = location.state?.isRegistration;
 
   React.useEffect(() => {
     let interval;
+
     if (timer > 0) {
       interval = setInterval(() => {
         setTimer((prev) => prev - 1);
       }, 1000);
     } else {
       setCanResend(true);
-      clearInterval(interval);
     }
+
     return () => clearInterval(interval);
   }, [timer]);
 
   const handleSubmit = async (e, isResend = false) => {
     if (e) e.preventDefault();
+
     if (!email) {
       setError('Session expired. Please start again.');
       return;
@@ -40,37 +44,62 @@ const VerifyOtp = () => {
 
     if (isResend) {
       if (!canResend) return;
+
       setResending(true);
       setError('');
+      setMessage('');
+
       try {
         const reason = isRegistration ? 'registration' : 'forgot-password';
-        await axios.post('/api/auth/resend-otp', { email, reason }); 
+
+        await api.post('/auth/resend-otp', {
+          email,
+          reason,
+        });
+
         setMessage('New OTP sent to your email.');
         setTimer(60);
         setCanResend(false);
       } catch (err) {
-        setError('Failed to resend OTP.');
+        setError(
+          err.response?.data?.message || 'Failed to resend OTP.'
+        );
       } finally {
         setResending(false);
       }
+
       return;
     }
 
     setLoading(true);
     setError('');
+    setMessage('');
 
     try {
-      const { data } = await axios.post('/api/auth/verify-otp', { email, otp });
+      const { data } = await api.post('/auth/verify-otp', {
+        email,
+        otp,
+      });
+
       if (data.verified) {
-        // If it was registration and successfully verified
-        setMessage(data.message);
-        setTimeout(() => navigate('/login'), 2500);
+        setMessage(data.message || 'OTP verified successfully.');
+
+        if (isRegistration) {
+          setTimeout(() => navigate('/login'), 2500);
+        } else {
+          navigate('/reset-password', {
+            state: { email, otp },
+          });
+        }
       } else {
-        // Forgotten password case
-        navigate('/reset-password', { state: { email, otp } });
+        navigate('/reset-password', {
+          state: { email, otp },
+        });
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid OTP');
+      setError(
+        err.response?.data?.message || 'Invalid OTP'
+      );
     } finally {
       setLoading(false);
     }
@@ -80,11 +109,17 @@ const VerifyOtp = () => {
     <div className="bg-white min-h-screen flex items-center justify-center pt-32 pb-20 fade-in">
       <Container className="max-w-lg">
         <div className="text-center mb-16">
-          <span className="text-[10px] uppercase tracking-[0.4em] font-bold text-[var(--accent)] mb-6 block">Identity Verification / {isRegistration ? 'Activation' : 'Secure Vault'}</span>
+          <span className="text-[10px] uppercase tracking-[0.4em] font-bold text-[var(--accent)] mb-6 block">
+            Identity Verification / {isRegistration ? 'Activation' : 'Secure Vault'}
+          </span>
+
           <h1 className="text-4xl md:text-5xl font-bold uppercase tracking-[0.1em] text-black leading-tight mb-6">
             {isRegistration ? 'Activate Account' : 'Verify OTP'}
           </h1>
-          <p className="text-gray-400 text-[10px] uppercase tracking-[0.2em] font-medium max-w-xs mx-auto">Please enter the 6-digit code sent to your registered email address.</p>
+
+          <p className="text-gray-400 text-[10px] uppercase tracking-[0.2em] font-medium max-w-xs mx-auto">
+            Please enter the 6-digit code sent to your registered email address.
+          </p>
         </div>
 
         <div className="bg-[#FBFBFB] p-12 border border-gray-50 shadow-2xl relative overflow-hidden">
@@ -95,13 +130,17 @@ const VerifyOtp = () => {
           <form onSubmit={handleSubmit} className="relative z-10">
             {message && (
               <div className="p-4 border border-emerald-100 bg-emerald-50/50 mb-10 text-center">
-                <p className="text-[9px] uppercase tracking-widest text-emerald-600 font-bold">{message}</p>
+                <p className="text-[9px] uppercase tracking-widest text-emerald-600 font-bold">
+                  {message}
+                </p>
               </div>
             )}
 
             {error && (
               <div className="p-4 border border-rose-100 bg-rose-50/50 mb-10 text-center">
-                <p className="text-[9px] uppercase tracking-widest text-rose-500 font-bold">{error}</p>
+                <p className="text-[9px] uppercase tracking-widest text-rose-500 font-bold">
+                  {error}
+                </p>
               </div>
             )}
 
@@ -121,23 +160,33 @@ const VerifyOtp = () => {
               className="w-full bg-black text-white py-6 text-[10px] font-bold uppercase tracking-[0.4em] hover:bg-[var(--accent)] transition-all duration-500 shadow-xl flex items-center justify-center gap-6 group disabled:bg-gray-400 mt-8"
             >
               {loading ? 'Authenticating...' : 'Validate Access'}
-              {!loading && <MoveRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />}
+
+              {!loading && (
+                <MoveRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+              )}
             </button>
           </form>
         </div>
 
         <div className="text-center mt-12 flex flex-col gap-6">
-          <button 
+          <button
             type="button"
-            onClick={(e) => handleSubmit(null, true)}
+            onClick={(e) => handleSubmit(e, true)}
             disabled={resending || timer > 0}
             className="text-[10px] uppercase tracking-[0.3em] font-black text-black border-b border-black pb-1 hover:text-[var(--accent)] hover:border-[var(--accent)] transition-all cursor-pointer disabled:opacity-50 mx-auto w-fit"
           >
-            {resending ? 'Resending...' : timer > 0 ? `Resend in ${timer}s` : "Didn't receive code? Resend"}
+            {resending
+              ? 'Resending...'
+              : timer > 0
+                ? `Resend in ${timer}s`
+                : "Didn't receive code? Resend"}
           </button>
-          
-          <Link to="/login" className="text-[10px] uppercase tracking-[0.3em] font-bold text-gray-400 hover:text-black transition-all">
-             Cancel Protocol
+
+          <Link
+            to="/login"
+            className="text-[10px] uppercase tracking-[0.3em] font-bold text-gray-400 hover:text-black transition-all"
+          >
+            Cancel Protocol
           </Link>
         </div>
       </Container>

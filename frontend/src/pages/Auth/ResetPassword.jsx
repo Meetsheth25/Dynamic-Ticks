@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '@/services/api';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { Container } from '@/components/common/Container';
 import { Input } from '@/components/common/Input';
-import { MoveRight, ShieldCheck, Lock } from 'lucide-react';
+import { MoveRight, ShieldCheck } from 'lucide-react';
 
 const ResetPassword = () => {
   const location = useLocation();
   const navigate = useNavigate();
+
   const email = location.state?.email;
   const otp = location.state?.otp;
 
@@ -19,13 +20,15 @@ const ResetPassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!email || !otp) {
       setError('Session expired. Please start the recovery process again.');
       return;
     }
 
     if (password !== confirmPassword) {
-      return setError('Passwords do not match');
+      setError('Passwords do not match');
+      return;
     }
 
     setLoading(true);
@@ -33,13 +36,21 @@ const ResetPassword = () => {
     setError('');
 
     try {
-      const { data } = await axios.post('/api/auth/reset-password', { email, otp, password });
+      const { data } = await api.post('/auth/reset-password', {
+        email,
+        otp,
+        password,
+      });
+
       setMessage(data.message);
+
       setTimeout(() => {
         navigate('/login');
       }, 3000);
     } catch (err) {
-      setError(err.response?.data?.message || 'Something went wrong');
+      setError(
+        err.response?.data?.message || 'Something went wrong'
+      );
     } finally {
       setLoading(false);
     }
@@ -49,11 +60,17 @@ const ResetPassword = () => {
     <div className="bg-white min-h-screen flex items-center justify-center pt-32 pb-20 fade-in">
       <Container className="max-w-lg">
         <div className="text-center mb-16">
-          <span className="text-[10px] uppercase tracking-[0.4em] font-bold text-[var(--accent)] mb-6 block">Access Redefinition / Secure Vault</span>
+          <span className="text-[10px] uppercase tracking-[0.4em] font-bold text-[var(--accent)] mb-6 block">
+            Access Redefinition / Secure Vault
+          </span>
+
           <h1 className="text-4xl md:text-5xl font-bold uppercase tracking-[0.1em] text-black leading-tight mb-6">
             Reset Passkey
           </h1>
-          <p className="text-gray-400 text-[10px] uppercase tracking-[0.2em] font-medium max-w-xs mx-auto">Complete the validation process to establish your new security credentials.</p>
+
+          <p className="text-gray-400 text-[10px] uppercase tracking-[0.2em] font-medium max-w-xs mx-auto">
+            Complete the validation process to establish your new security credentials.
+          </p>
         </div>
 
         <div className="bg-[#FBFBFB] p-12 border border-gray-50 shadow-2xl relative overflow-hidden">
@@ -64,14 +81,21 @@ const ResetPassword = () => {
           <form onSubmit={handleSubmit} className="relative z-10">
             {message && (
               <div className="p-4 border border-emerald-100 bg-emerald-50/50 mb-10 text-center">
-                <p className="text-[9px] uppercase tracking-widest text-emerald-600 font-bold">{message}</p>
-                <p className="text-[8px] uppercase tracking-widest mt-2 text-gray-400">Redirecting to login...</p>
+                <p className="text-[9px] uppercase tracking-widest text-emerald-600 font-bold">
+                  {message}
+                </p>
+
+                <p className="text-[8px] uppercase tracking-widest mt-2 text-gray-400">
+                  Redirecting to login...
+                </p>
               </div>
             )}
 
             {error && (
               <div className="p-4 border border-rose-100 bg-rose-50/50 mb-10 text-center">
-                <p className="text-[9px] uppercase tracking-widest text-rose-500 font-bold">{error}</p>
+                <p className="text-[9px] uppercase tracking-widest text-rose-500 font-bold">
+                  {error}
+                </p>
               </div>
             )}
 
@@ -87,7 +111,7 @@ const ResetPassword = () => {
             <Input
               type="password"
               label="Confirm Passkey"
-              placeholder="Verify code"
+              placeholder="Verify password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
@@ -99,13 +123,19 @@ const ResetPassword = () => {
               className="w-full bg-black text-white py-6 text-[10px] font-bold uppercase tracking-[0.4em] hover:bg-[var(--accent)] transition-all duration-500 shadow-xl flex items-center justify-center gap-6 group disabled:bg-gray-400 mt-8"
             >
               {loading ? 'Redefining Access...' : 'Reset Passkey'}
-              {!loading && <MoveRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />}
+
+              {!loading && (
+                <MoveRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+              )}
             </button>
           </form>
         </div>
 
         <div className="text-center mt-12">
-          <Link to="/login" className="text-[10px] uppercase tracking-[0.3em] font-black text-black border-b border-black pb-1 hover:text-[var(--accent)] hover:border-[var(--accent)] transition-all">
+          <Link
+            to="/login"
+            className="text-[10px] uppercase tracking-[0.3em] font-black text-black border-b border-black pb-1 hover:text-[var(--accent)] hover:border-[var(--accent)] transition-all"
+          >
             Return to Authentication
           </Link>
         </div>
