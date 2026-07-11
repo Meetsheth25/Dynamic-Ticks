@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 import dns from "dns";
 
-// Prefer IPv4 first (helps on some cloud platforms)
+// Force Node.js to prefer IPv4
 dns.setDefaultResultOrder("ipv4first");
 
 const sendEmail = async (options) => {
@@ -28,7 +28,12 @@ const sendEmail = async (options) => {
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: Number(process.env.EMAIL_PORT),
-      secure: Number(process.env.EMAIL_PORT) === 465,
+
+      // Gmail
+      secure: false,
+
+      // Force IPv4
+      family: 4,
 
       auth: {
         user: process.env.EMAIL_USER,
@@ -37,13 +42,21 @@ const sendEmail = async (options) => {
 
       requireTLS: true,
 
+      tls: {
+        rejectUnauthorized: false,
+        minVersion: "TLSv1.2",
+      },
+
       connectionTimeout: 60000,
       greetingTimeout: 60000,
       socketTimeout: 60000,
 
-      tls: {
-        rejectUnauthorized: false,
-      },
+      pool: true,
+      maxConnections: 5,
+      maxMessages: 100,
+
+      logger: true,
+      debug: true,
     });
 
     console.log("🔍 Verifying SMTP connection...");
@@ -67,8 +80,13 @@ const sendEmail = async (options) => {
 
     return info;
   } catch (error) {
+    console.error("========================================");
     console.error("❌ NODEMAILER ERROR");
-    console.error(error);
+    console.error("Code:", error.code);
+    console.error("Command:", error.command);
+    console.error("Message:", error.message);
+    console.error("Stack:", error.stack);
+    console.error("========================================");
     throw error;
   }
 };
