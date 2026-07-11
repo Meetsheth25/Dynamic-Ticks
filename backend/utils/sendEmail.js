@@ -1,7 +1,5 @@
-import nodemailer from "nodemailer";
-
 /**
- * Sends an email using Brevo SMTP.
+ * Sends an email using the Brevo HTTP API (v3/smtp/email).
  * @param {Object} options - Email options
  * @param {string} options.email - Recipient email address
  * @param {string} options.subject - Email subject
@@ -10,59 +8,63 @@ import nodemailer from "nodemailer";
  */
 const sendEmail = async (options) => {
   console.log("========================================");
-  console.log("📧 ATTEMPTING TO SEND EMAIL VIA BREVO SMTP");
+  console.log("📧 ATTEMPTING TO SEND EMAIL VIA BREVO HTTP API");
   console.log("To   :", options.email);
   console.log("Subject :", options.subject);
   console.log("========================================");
 
-  if (
-    !process.env.SMTP_HOST ||
-    !process.env.SMTP_PORT ||
-    !process.env.SMTP_USER ||
-    !process.env.SMTP_PASS ||
-    !process.env.EMAIL_FROM
-  ) {
+  if (!process.env.BREVO_API_KEY || !process.env.EMAIL_FROM) {
     const error = new Error(
-      "Missing Brevo SMTP environment variables (SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, EMAIL_FROM)."
+      "Missing Brevo API environment variables (BREVO_API_KEY, EMAIL_FROM)."
     );
-    console.error("❌ SMTP CONFIG ERROR:", error.message);
+    console.error("❌ BREVO HTTP CONFIG ERROR:", error.message);
     throw error;
   }
 
-  try {
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      secure: false, // true for port 465, false for other ports (like 587)
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
+  const payload = {
+    sender: {
+      name: "Dynamic Ticks",
+      email: process.env.EMAIL_FROM,
+    },
+    to: [
+      {
+        email: options.email,
       },
+    ],
+    subject: options.subject,
+    htmlContent: options.html,
+    textContent: options.message,
+  };
+
+  try {
+    console.log("📤 Sending email via Brevo HTTP API...");
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "accept": "application/json",
+        "api-key": process.env.BREVO_API_KEY,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(payload),
     });
 
-    console.log("🔍 Connecting to Brevo SMTP...");
-    await transporter.verify();
-    console.log("✅ SMTP Connected Successfully");
+    const responseData = await response.json();
+    console.log("========================================");
+    console.log("📥 BREVO API RESPONSE RECEIVED");
+    console.log("Status:", response.status);
+    console.log("Data  :", JSON.stringify(responseData, null, 2));
+    console.log("========================================");
 
-    const mailOptions = {
-      from: process.env.EMAIL_FROM,
-      to: options.email,
-      subject: options.subject,
-      text: options.message,
-      html: options.html,
-    };
+    if (!response.ok) {
+      const errorMessage = responseData.message || `Brevo API returned status ${response.status}`;
+      throw new Error(errorMessage);
+    }
 
-    console.log("📤 Sending email via SMTP...");
-    const info = await transporter.sendMail(mailOptions);
-
-    console.log("✅ Email Sent Successfully");
-    console.log("Message ID:", info.messageId);
-
-    return info;
+    console.log("✅ Email Sent Successfully via Brevo HTTP API");
+    return responseData;
   } catch (error) {
     console.error("========================================");
-    console.error("❌ SMTP ERROR");
-    console.error("Code:", error.code);
+    console.error("❌ BREVO HTTP API ERROR");
     console.error("Message:", error.message);
     console.error("Stack:", error.stack);
     console.error("========================================");
