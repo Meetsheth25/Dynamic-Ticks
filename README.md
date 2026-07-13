@@ -6,6 +6,16 @@ Dynamic Ticks is a premium, full-stack MERN (MongoDB, Express, React, Node.js) e
 
 ---
 
+## 🌐 Live Demo
+
+Frontend (Vercel)
+https://dynamic-ticks.vercel.app
+
+Backend (Render)
+https://dynamic-ticks.onrender.com
+
+---
+
 ## 🌟 Key Features & Functionalities
 
 ### 1. Distinctive Premium UI/UX
@@ -147,6 +157,90 @@ npm run dev
 cd frontend
 npm run dev
 ```
+
+---
+
+## 🚀 Deployment
+
+- Frontend is deployed on Vercel.
+- Backend API is deployed on Render.
+- MongoDB Atlas is used as the production database.
+- Environment variables are configured separately on Vercel and Render.
+- Frontend communicates with the backend using VITE_API_URL.
+
+---
+
+## ⚙️ Production Environment Variables
+
+### Backend (Render)
+
+```env
+PORT=
+NODE_ENV=production
+MONGO_URI=
+JWT_SECRET=
+BREVO_API_KEY=
+EMAIL_FROM=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+RAZORPAY_KEY_ID=
+RAZORPAY_KEY_SECRET=
+```
+
+### Frontend (Vercel)
+
+```env
+VITE_API_URL=
+VITE_GOOGLE_CLIENT_ID=
+```
+
+---
+
+## 📦 Deployment Architecture
+
+```mermaid
+graph TD
+    User[User] --> Vercel["Vercel (React + Vite)"]
+    Vercel --> Render["Render (Express API)"]
+    Render --> MongoDB["MongoDB Atlas"]
+    Render --> Brevo["Brevo Email API"]
+    Render --> Google["Google OAuth"]
+    Render --> Razorpay["Razorpay"]
+```
+
+---
+
+## 🔒 Production Security
+
+- JWT Authentication
+- Password hashing using bcrypt
+- Google OAuth
+- Email OTP verification using Brevo
+- Environment variables
+- Protected API routes
+- Role-based authorization
+- HTTPS deployment
+
+---
+
+## 📈 Deployment Status
+
+[![Frontend (Vercel)](https://img.shields.io/badge/Frontend-Vercel-black?style=flat-square&logo=vercel)](https://dynamic-ticks.vercel.app)
+[![Backend (Render)](https://img.shields.io/badge/Backend-Render-46E3B7?style=flat-square&logo=render&logoColor=white)](https://dynamic-ticks.onrender.com)
+[![Database (MongoDB Atlas)](https://img.shields.io/badge/Database-MongoDB%20Atlas-47A248?style=flat-square&logo=mongodb&logoColor=white)](https://www.mongodb.com/cloud/atlas)
+
+---
+
+## 🧪 Production Ready Features
+
+- Production Deployment
+- Secure Authentication
+- Responsive UI
+- Role-Based Access
+- Email OTP Verification
+- Google Login
+- Payment Gateway
+- Order Management
 
 ---
 
