@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useSelector } from 'react-redux';
 import RootLayout from '@/layouts/RootLayout';
 import { Toaster } from 'react-hot-toast';
+import { Analytics } from '@vercel/analytics/react';
 
 // Lazy loading all pages for better performance
 const Home = lazy(() => import('@/pages/customer/Home'));
@@ -61,6 +62,7 @@ function App() {
   return (
     <Router>
       <Toaster position="top-right" reverseOrder={false} />
+      <Analytics />
       <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Main Layout containing Navbar and Footer */}
