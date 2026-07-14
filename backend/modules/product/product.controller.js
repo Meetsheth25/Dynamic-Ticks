@@ -1,5 +1,22 @@
 import asyncHandler from 'express-async-handler';
 import Product from './product.model.js';
+import { deleteFromCloudinary } from '../../config/cloudinary.js';
+
+// Helper to extract all image URLs from a product
+const getProductImagesUrls = (product) => {
+  const urls = [];
+  if (product.images && Array.isArray(product.images)) {
+    urls.push(...product.images);
+  }
+  if (product.colorVariants && Array.isArray(product.colorVariants)) {
+    product.colorVariants.forEach(variant => {
+      if (variant.images && Array.isArray(variant.images)) {
+        urls.push(...variant.images);
+      }
+    });
+  }
+  return [...new Set(urls)];
+};
 
 // @desc    Fetch all products
 // @route   GET /api/products
@@ -47,7 +64,7 @@ export const createProduct = asyncHandler(async (req, res) => {
         return {
           ...variant,
           images: variantFiles.length > 0
-            ? variantFiles.map(f => `/uploads/${f.filename}`)
+            ? variantFiles.map(f => f.path)
             : (variant.images || [])
         };
       });
@@ -59,7 +76,7 @@ export const createProduct = asyncHandler(async (req, res) => {
 
     // Default product images = first variant's images, or explicit images field
     const defaultImages = req.files
-      ? req.files.filter(f => f.fieldname === 'images').map(file => `/uploads/${file.filename}`)
+      ? req.files.filter(f => f.fieldname === 'images').map(file => file.path)
       : [];
 
     console.log("MAPPED IMAGE PATHS:", defaultImages);
@@ -93,6 +110,14 @@ export const createProduct = asyncHandler(async (req, res) => {
     res.status(201).json(createdProduct);
   } catch (error) {
     console.error(error);
+    // Delete newly uploaded files from Cloudinary to avoid orphaned files
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        if (file.path) {
+          await deleteFromCloudinary(file.path);
+        }
+      }
+    }
     res.status(500).json({ message: error.message });
   }
 });
@@ -121,6 +146,9 @@ export const updateProduct = asyncHandler(async (req, res) => {
     if (product) {
       console.log("FILES (Update):", req.files);
 
+      // Track old image URLs before updating
+      const oldUrls = getProductImagesUrls(product);
+
       product.name = name || product.name;
       product.price = price !== undefined ? Number(price) : product.price;
       product.description = description || product.description;
@@ -143,7 +171,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
             return {
               ...variant,
               images: variantFiles.length > 0
-                ? variantFiles.map(f => `/uploads/${f.filename}`)
+                ? variantFiles.map(f => f.path)
                 : (variant.images || [])
             };
           });
@@ -159,13 +187,21 @@ export const updateProduct = asyncHandler(async (req, res) => {
       // Update default images if explicit 'images' files were uploaded
       const defaultFiles = req.files ? req.files.filter(f => f.fieldname === 'images') : [];
       if (defaultFiles.length > 0) {
-        product.images = defaultFiles.map(file => `/uploads/${file.filename}`);
+        product.images = defaultFiles.map(file => file.path);
       } else if (product.colorVariants?.length > 0 && product.images.length === 0) {
         product.images = product.colorVariants[0]?.images || [];
       }
 
       console.log("IMAGES (Update):", product.images);
       const updatedProduct = await product.save();
+
+      // Clean up old orphaned images since save was successful
+      const newUrls = getProductImagesUrls(product);
+      const orphanedUrls = oldUrls.filter(url => !newUrls.includes(url));
+      for (const url of orphanedUrls) {
+        await deleteFromCloudinary(url);
+      }
+
       res.json(updatedProduct);
     } else {
       res.status(404);
@@ -173,6 +209,14 @@ export const updateProduct = asyncHandler(async (req, res) => {
     }
   } catch (error) {
     console.error(error);
+    // Delete newly uploaded files from Cloudinary to avoid orphaned files since DB save failed
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        if (file.path) {
+          await deleteFromCloudinary(file.path);
+        }
+      }
+    }
     res.status(500).json({ message: error.message });
   }
 });
@@ -185,6 +229,11 @@ export const deleteProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
 
   if (product) {
+    // Delete all images from Cloudinary
+    const urls = getProductImagesUrls(product);
+    for (const url of urls) {
+      await deleteFromCloudinary(url);
+    }
     await product.deleteOne();
     res.json({ message: 'Product removed' });
   } else {
@@ -192,3 +241,4 @@ export const deleteProduct = asyncHandler(async (req, res) => {
     throw new Error('Product not found');
   }
 });
+

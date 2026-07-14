@@ -78,6 +78,7 @@ To explore the different roles, you can use the following pre-configured account
 - **Payments:** Razorpay SDK.
 - **Email:** Nodemailer.
 - **Security:** JWT, bcryptjs, Google OAuth, COOP Headers.
+- **Media Storage:** Cloudinary (via `multer-storage-cloudinary`).
 
 ---
 
@@ -137,6 +138,9 @@ GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
 RAZORPAY_KEY_ID=your_razorpay_key_id
 RAZORPAY_KEY_SECRET=your_razorpay_secret
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 ```
 
 ### 4. Initialize Database
@@ -165,8 +169,19 @@ npm run dev
 - Frontend is deployed on Vercel.
 - Backend API is deployed on Render.
 - MongoDB Atlas is used as the production database.
+- Cloudinary is used to store and serve product images.
 - Environment variables are configured separately on Vercel and Render.
 - Frontend communicates with the backend using VITE_API_URL.
+
+### Deploying to Render
+1. Log in to your Render Dashboard.
+2. Select your Web Service.
+3. Go to the **Environment** settings.
+4. Add the following keys:
+   - `CLOUDINARY_CLOUD_NAME`
+   - `CLOUDINARY_API_KEY`
+   - `CLOUDINARY_API_SECRET`
+5. Save changes and trigger a manual redeployment.
 
 ---
 
@@ -185,6 +200,9 @@ GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 RAZORPAY_KEY_ID=
 RAZORPAY_KEY_SECRET=
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
 ```
 
 ### Frontend (Vercel)
@@ -206,6 +224,7 @@ graph TD
     Render --> Brevo["Brevo Email API"]
     Render --> Google["Google OAuth"]
     Render --> Razorpay["Razorpay"]
+    Render --> Cloudinary["Cloudinary Storage"]
 ```
 
 ---

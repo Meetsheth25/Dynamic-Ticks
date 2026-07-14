@@ -5,6 +5,23 @@ import Order from '../order/order.model.js';
 import Product from '../product/product.model.js';
 import Review from '../review/review.model.js';
 import jwt from 'jsonwebtoken';
+import { deleteFromCloudinary } from '../../config/cloudinary.js';
+
+// Helper to extract all image URLs from a product
+const getProductImagesUrls = (product) => {
+  const urls = [];
+  if (product.images && Array.isArray(product.images)) {
+    urls.push(...product.images);
+  }
+  if (product.colorVariants && Array.isArray(product.colorVariants)) {
+    product.colorVariants.forEach(variant => {
+      if (variant.images && Array.isArray(variant.images)) {
+        urls.push(...variant.images);
+      }
+    });
+  }
+  return [...new Set(urls)];
+};
 
 const generateToken = (id, role) =>
   jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: '30d' });
@@ -207,51 +224,85 @@ export const managerGetProducts = asyncHandler(async (req, res) => {
 // @route  POST /api/employees/manager/products
 // @access Private/Manager
 export const managerCreateProduct = asyncHandler(async (req, res) => {
-  const { name, price, category, targetAudience, description, countInStock, returnAvailable, returnDays, returnHours } = req.body;
-  const colors = req.body.colors ? JSON.parse(req.body.colors) : [];
-  const imagePaths = req.files ? req.files.map(f => `/uploads/${f.filename}`) : [];
+  try {
+    const { name, price, category, targetAudience, description, countInStock, returnAvailable, returnDays, returnHours } = req.body;
+    const colors = req.body.colors ? JSON.parse(req.body.colors) : [];
+    const imagePaths = req.files ? req.files.map(f => f.path) : [];
 
-  const product = new Product({
-    name, price: Number(price), category, targetAudience: targetAudience || 'Unisex',
-    colors,
-    images: imagePaths,
-    description: description || '',
-    countInStock: Number(countInStock) || 0,
-    returnAvailable: returnAvailable === 'true' || returnAvailable === true,
-    returnDays: Number(returnDays) || 0,
-    returnHours: Number(returnHours) || 0,
-  });
+    const product = new Product({
+      name, price: Number(price), category, targetAudience: targetAudience || 'Unisex',
+      colors,
+      images: imagePaths,
+      description: description || '',
+      countInStock: Number(countInStock) || 0,
+      returnAvailable: returnAvailable === 'true' || returnAvailable === true,
+      returnDays: Number(returnDays) || 0,
+      returnHours: Number(returnHours) || 0,
+    });
 
-  const created = await product.save();
-  res.status(201).json(created);
+    const created = await product.save();
+    res.status(201).json(created);
+  } catch (error) {
+    console.error(error);
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        if (file.path) {
+          await deleteFromCloudinary(file.path);
+        }
+      }
+    }
+    res.status(500).json({ message: error.message });
+  }
 });
 
 // @desc   Manager update product (stock + details)
 // @route  PUT /api/employees/manager/products/:id
 // @access Private/Manager
 export const managerUpdateProduct = asyncHandler(async (req, res) => {
-  const product = await Product.findById(req.params.id);
-  if (!product) {
-    res.status(404);
-    throw new Error('Product not found');
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      res.status(404);
+      throw new Error('Product not found');
+    }
+
+    const oldUrls = getProductImagesUrls(product);
+
+    const { name, price, category, targetAudience, description, countInStock, returnAvailable, returnDays, returnHours } = req.body;
+    const colors = req.body.colors ? JSON.parse(req.body.colors) : undefined;
+    product.name = name || product.name;
+    product.price = price !== undefined ? Number(price) : product.price;
+    product.category = category || product.category;
+    product.targetAudience = targetAudience || product.targetAudience;
+    if (colors !== undefined) product.colors = colors;
+    product.description = description || product.description;
+    product.countInStock = countInStock !== undefined ? Number(countInStock) : product.countInStock;
+    product.returnAvailable = returnAvailable !== undefined ? (returnAvailable === 'true' || returnAvailable === true) : product.returnAvailable;
+    product.returnDays = returnDays !== undefined ? Number(returnDays) : product.returnDays;
+    product.returnHours = returnHours !== undefined ? Number(returnHours) : product.returnHours;
+    if (req.files && req.files.length > 0) product.images = req.files.map(f => f.path);
+
+    const updated = await product.save();
+
+    // Clean up old orphaned images since save was successful
+    const newUrls = getProductImagesUrls(product);
+    const orphanedUrls = oldUrls.filter(url => !newUrls.includes(url));
+    for (const url of orphanedUrls) {
+      await deleteFromCloudinary(url);
+    }
+
+    res.json(updated);
+  } catch (error) {
+    console.error(error);
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        if (file.path) {
+          await deleteFromCloudinary(file.path);
+        }
+      }
+    }
+    res.status(500).json({ message: error.message });
   }
-
-  const { name, price, category, targetAudience, description, countInStock, returnAvailable, returnDays, returnHours } = req.body;
-  const colors = req.body.colors ? JSON.parse(req.body.colors) : undefined;
-  product.name = name || product.name;
-  product.price = price !== undefined ? Number(price) : product.price;
-  product.category = category || product.category;
-  product.targetAudience = targetAudience || product.targetAudience;
-  if (colors !== undefined) product.colors = colors;
-  product.description = description || product.description;
-  product.countInStock = countInStock !== undefined ? Number(countInStock) : product.countInStock;
-  product.returnAvailable = returnAvailable !== undefined ? (returnAvailable === 'true' || returnAvailable === true) : product.returnAvailable;
-  product.returnDays = returnDays !== undefined ? Number(returnDays) : product.returnDays;
-  product.returnHours = returnHours !== undefined ? Number(returnHours) : product.returnHours;
-  if (req.files && req.files.length > 0) product.images = req.files.map(f => `/uploads/${f.filename}`);
-
-  const updated = await product.save();
-  res.json(updated);
 });
 
 // @desc   Manager delete product
@@ -263,6 +314,13 @@ export const managerDeleteProduct = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error('Product not found');
   }
+
+  // Delete all images from Cloudinary
+  const urls = getProductImagesUrls(product);
+  for (const url of urls) {
+    await deleteFromCloudinary(url);
+  }
+
   await product.deleteOne();
   res.json({ message: 'Product removed' });
 });
