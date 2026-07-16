@@ -9,6 +9,7 @@ import { Card } from '@/components/common/Card';
 import { Input } from '@/components/common/Input';
 import { Container } from '@/components/common/Container';
 import { Lock, MoveRight, User } from 'lucide-react';
+import api from '@/services/api';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -54,26 +55,26 @@ const Login = () => {
     setLocalError('');
 
     if (email && password) {
-      // 1. Try to login as a regular User / Admin
-      const resultAction = await dispatch(loginUser({ email, password }));
+      let accountType;
+      try {
+        const checkRes = await api.post('/auth/check-account', { email });
+        accountType = checkRes.data.type;
+      } catch (err) {
+        setLocalError("Unable to connect to the server. Please try again.");
+        return;
+      }
 
-      if (loginUser.fulfilled.match(resultAction)) {
-        const userInfo = resultAction.payload;
-        if (userInfo.isAdmin) navigate('/admin');
-        else navigate('/');
-      } else {
-        const status = resultAction.payload?.status;
-        const errorMessage = resultAction.payload?.message || resultAction.payload;
+      if (accountType === 'user') {
+        const resultAction = await dispatch(loginUser({ email, password }));
 
-        if (status === 403 || status === 401) {
-          setLocalError(errorMessage);
-          return;
+        if (loginUser.fulfilled.match(resultAction)) {
+          const userInfo = resultAction.payload;
+          if (userInfo.isAdmin) navigate('/admin');
+          else navigate('/');
+        } else {
+          setLocalError(resultAction.payload?.message || resultAction.payload || "Invalid credentials");
         }
-
-        // Clear the auth slice error before trying employee login
-        // this prevents the "User not found" error from lingering if employee login succeeds
-        dispatch(clearError());
-
+      } else if (accountType === 'employee') {
         const empResultAction = await dispatch(loginEmployee({ email, password }));
 
         if (loginEmployee.fulfilled.match(empResultAction)) {
@@ -82,8 +83,12 @@ const Login = () => {
           else if (empInfo.role === 'staff') navigate('/staff/dashboard');
           else if (empInfo.role === 'delivery') navigate('/delivery/dashboard');
         } else {
-          setLocalError(empResultAction.payload?.message || resultAction.payload?.message || "Invalid credentials");
+          setLocalError(empResultAction.payload?.message || empResultAction.payload || "Invalid credentials");
         }
+      } else if (accountType === 'not_found') {
+        setLocalError("Account not found. Please register first.");
+      } else {
+        setLocalError("An unexpected response occurred. Please try again.");
       }
     }
   };

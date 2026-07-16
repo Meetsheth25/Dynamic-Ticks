@@ -34,7 +34,7 @@ export default function DeliveryDashboard() {
 
   const updateDeliveryStatus = async (id, deliveryStatus) => {
     try {
-      await dispatch(updateDeliveryStatusThunk({ id, status: deliveryStatus })).unwrap();
+      await dispatch(updateDeliveryStatusThunk({ id, deliveryStatus })).unwrap();
       setMsg(`Status updated to "${deliveryStatus.replace(/_/g, ' ')}"`);
     } catch (err) {
       setMsg(err || 'Failed to update status');

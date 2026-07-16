@@ -395,3 +395,34 @@ export const googleAuth = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Check if email belongs to User or Employee
+// @route   POST /api/auth/check-account
+// @access  Public
+export const checkAccount = asyncHandler(async (req, res) => {
+  const { email: rawEmail } = req.body;
+  if (!rawEmail) {
+    res.status(400);
+    throw new Error('Email is required');
+  }
+  const email = rawEmail.toLowerCase().trim();
+
+  // Search User collection
+  const user = await User.findOne({
+    $or: [{ email: email }, { name: email }],
+  });
+
+  if (user) {
+    return res.status(200).json({ type: 'user' });
+  }
+
+  // Search Employee collection
+  const employee = await Employee.findOne({ email });
+
+  if (employee) {
+    return res.status(200).json({ type: 'employee' });
+  }
+
+  return res.status(200).json({ type: 'not_found' });
+});
+
+

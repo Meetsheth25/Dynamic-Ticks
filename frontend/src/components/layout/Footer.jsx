@@ -30,9 +30,9 @@ const Footer = () => {
           <div className="md:col-span-2">
             <h3 className="font-medium text-white mb-8 uppercase tracking-[0.2em] text-xs">The Maison</h3>
             <ul className="flex flex-col gap-4 text-sm font-light text-gray-400 tracking-wide">
-              <li><Link to="/about" className="hover:text-[var(--accent)] transition-colors">Our Story</Link></li>
+
               <li><Link to="/about" className="hover:text-[var(--accent)] transition-colors">Craftsmanship</Link></li>
-              <li><Link to="/catalog" className="hover:text-[var(--accent)] transition-colors">Collections</Link></li>
+
               <li><Link to="/catalog" className="hover:text-[var(--accent)] transition-colors">Bespoke</Link></li>
             </ul>
           </div>
